@@ -12,11 +12,17 @@ defaults:
 env:
   MAVEN_ARGS: "-e -B --settings .github/mvn-settings.xml --fail-at-end"
 
+permissions: { } # none
+
 jobs:
   publish-build-scans:
     name: Publish Develocity build scans
     if: github.repository == 'hibernate/hibernate-search' && github.event.workflow_run.conclusion != 'cancelled'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
     steps:
       # Checkout target branch which has trusted code
       - name: Check out target branch
@@ -54,6 +60,7 @@ jobs:
       - name: Publish Develocity build scans for previous builds
         if: ${{ steps.downloadBuildScan.outcome != 'failure'}}
         run: |
+          read -ra mvn_args <<< "$MAVEN_ARGS"
           shopt -s nullglob # Don't run the loop below if there are no artifacts
           status=0
           mkdir -p ~/.m2/.develocity/
@@ -61,7 +68,7 @@ jobs:
           do
             rm -rf ~/.m2/.develocity/build-scan-data
             mv "$build_scan_data_directory" ~/.m2/.develocity/build-scan-data \
-            && ./mvnw $MAVEN_ARGS develocity:build-scan-publish-previous || status=1
+            && ./mvnw "${mvn_args[@]}" develocity:build-scan-publish-previous || status=1
           done
           exit $status
         env:

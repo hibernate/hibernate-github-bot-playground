@@ -77,7 +77,8 @@ jobs:
 
       - name: Build code and run unit tests and basic checks
         run: |
-          ./mvnw $MAVEN_ARGS ${{ matrix.os.maven.args }} clean install \
+          read -ra mvn_args <<< "$MAVEN_ARGS"
+          ./mvnw "${mvn_args[@]}" clean install \
           -Pjqassistant -Pdist -Pci-build -DskipITs
         env:
           DEVELOCITY_ACCESS_KEY: "${{ secrets.DEVELOCITY_ACCESS_KEY || '' }}"
@@ -94,7 +95,8 @@ jobs:
 
       - name: Run integration tests in the default environment
         run: |
-          ./mvnw $MAVEN_ARGS ${{ matrix.os.maven.args }} clean verify \
+          read -ra mvn_args <<< "$MAVEN_ARGS"
+          ./mvnw "${mvn_args[@]}" clean verify \
           -Pskip-checks \
           ${{ github.event.pull_request.base.ref && format('-Dincremental -Dgib.referenceBranch=refs/remotes/origin/{0}', github.event.pull_request.base.ref) || '' }}
         env:
