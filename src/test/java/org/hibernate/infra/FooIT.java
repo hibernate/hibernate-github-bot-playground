@@ -14,6 +14,7 @@ public class FooIT {
 
 FAIL COMPILATION
 
+
 	
 	
 	@Test
